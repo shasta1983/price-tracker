@@ -10,29 +10,30 @@ const getHeaders = () => {
 
 const handleResponse = async (res) => {
     if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-            console.error('Sesión expirada o no autorizada');
-            // Si el token expira o falla, limpiamos y recargamos automáticamente
-            localStorage.removeItem('token');
-            window.location.reload();
-        }
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error ${res.status}: ${res.statusText}`);
+
+        // Si la sesión expiró o el token es inválido (401)
+        if (res.status === 401) {
+            throw new Error('SESSION_EXPIRED');
+        }
+
+        // Si es 403, 404, 500 o cualquier otro error de negocio/servidor
+        throw new Error(errorData.message || `API_ERROR_${res.status}`);
     }
     return res.json();
 };
 
-export const fetchProducts = async () => {
-    const res = await fetch(`${API_URL}/products`, { headers: getHeaders() });
+export const login = async (credentials) => {
+    const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+    });
     return handleResponse(res);
 };
 
-export const createProduct = async (data) => {
-    const res = await fetch(`${API_URL}/products`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(data),
-    });
+export const fetchProducts = async () => {
+    const res = await fetch(`${API_URL}/products`, { headers: getHeaders() });
     return handleResponse(res);
 };
 
@@ -44,5 +45,4 @@ export const fetchPriceHistory = async (productId) => {
 export const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userName');
-    window.location.reload();
 };

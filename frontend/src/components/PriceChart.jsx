@@ -1,48 +1,46 @@
 import React from 'react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 export default function PriceChart({ product, history }) {
     if (!product) {
         return (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 h-[500px] flex items-center justify-center text-slate-500">
-                Selecciona un producto de la lista para ver su historial de precios.
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-slate-500">
+                Selecciona un producto para ver su historial
             </div>
         );
     }
 
-    const data = history.map((item) => ({
-        time: new Date(item.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    // Mapeamos los campos del backend para la gráfica
+    const chartData = history.map((item) => ({
+        date: new Date(item.recordedAt).toLocaleDateString(),
         price: item.price,
     }));
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 h-[500px] flex flex-col">
-            <h3 className="text-base font-semibold text-slate-100 mb-1">{product.name}</h3>
-            <p className="text-xs text-slate-400 mb-4">Histórico de precios registrado por el scraping worker</p>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+            <h2 className="text-lg font-bold text-slate-200 mb-1">{product.name}</h2>
+            <p className="text-xs text-slate-400 mb-6">{product.url}</p>
 
-            <div className="flex-1 w-full min-h-0">
-                {data.length > 0 ? (
+            {chartData.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-slate-500 text-sm">
+                    Aún no hay registros de precios para este producto.
+                </div>
+            ) : (
+                <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data}>
-                            <defs>
-                                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
-                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                            <XAxis dataKey="time" stroke="#64748b" fontSize={11} />
-                            <YAxis stroke="#64748b" fontSize={11} unit="$" />
-                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc' }} />
-                            <Area type="monotone" dataKey="price" stroke="#818cf8" strokeWidth={2} fill="url(#colorPrice)" />
-                        </AreaChart>
+                        <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                            <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} />
+                            <YAxis stroke="#94a3b8" fontSize={12} domain={['auto', 'auto']} />
+                            <Tooltip
+                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
+                                labelStyle={{ color: '#94a3b8' }}
+                            />
+                            <Line type="monotone" dataKey="price" stroke="#6366f1" strokeWidth={2} dot={{ fill: '#6366f1' }} />
+                        </LineChart>
                     </ResponsiveContainer>
-                ) : (
-                    <div className="h-full flex items-center justify-center text-slate-500 text-sm">
-                        Aún no hay registros de precios para este producto.
-                    </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }
