@@ -37,6 +37,16 @@ export const fetchProducts = async () => {
     return handleResponse(res);
 };
 
+// <-- AGREGA ESTA FUNCIÓN NUEVA AQUÍ -->
+export const createProduct = async (productData) => {
+    const res = await fetch(`${API_URL}/products`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(productData),
+    });
+    return handleResponse(res);
+};
+
 export const fetchPriceHistory = async (productId) => {
     const res = await fetch(`${API_URL}/products/${productId}/history`, { headers: getHeaders() });
     return handleResponse(res);
